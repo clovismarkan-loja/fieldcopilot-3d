@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Field Copilot · Visualizador 3D</title>
+<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; height: 100vh; display: flex; flex-direction: column;
+    background: #1c1d20; color: #e8e8ea;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  header {
+    padding: 14px 20px 10px; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+  }
+  header h1 { font-size: 17px; margin: 0; font-weight: 650; letter-spacing: .2px; }
+  header span { font-size: 12.5px; color: #9a9aa2; }
+  nav {
+    display: flex; gap: 8px; padding: 0 20px 12px; flex-wrap: wrap;
+  }
+  nav button {
+    background: #2a2b30; color: #d8d8dc; border: 1px solid #3a3b42;
+    border-radius: 8px; padding: 7px 14px; font-size: 13px; cursor: pointer;
+  }
+  nav button:hover { background: #34353c; }
+  nav button.ativo { background: #e8e8ea; color: #1c1d20; border-color: #e8e8ea; font-weight: 600; }
+  model-viewer {
+    flex: 1; width: 100%; min-height: 0;
+    --poster-color: transparent;
+    background: radial-gradient(ellipse at 50% 40%, #2e2f34 0%, #1c1d20 70%);
+  }
+  footer { padding: 8px 20px 12px; font-size: 11.5px; color: #7a7a82; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Field Copilot &mdash; Hardware</h1>
+  <span>arraste para girar &middot; scroll para zoom &middot; duplo clique para focar</span>
+</header>
+<nav id="menu">
+  <button data-src="models/headset_montado_v3.glb" class="ativo">Conjunto montado</button>
+  <button data-src="models/novo_modulo_camera_v3.glb">M&oacute;dulo c&acirc;mera</button>
+  <button data-src="models/modulo_bateria_v3.glb">M&oacute;dulo bateria</button>
+  <button data-src="models/fone_gancho.glb">Fone + microfone</button>
+  <button data-src="models/relogio.glb">Rel&oacute;gio de pulso</button>
+</nav>
+<model-viewer id="mv"
+  src="models/headset_montado_v3.glb"
+  camera-controls auto-rotate auto-rotate-delay="1500" rotation-per-second="18deg"
+  shadow-intensity="0.9" shadow-softness="0.8"
+  exposure="1.05" environment-image="neutral"
+  interaction-prompt="none" touch-action="none">
+</model-viewer>
+<footer>Loja Interativa &middot; conceito visual dos m&oacute;dulos do Field Copilot &middot; modelos em escala real (mm)</footer>
+<script>
+  const mv = document.getElementById('mv');
+  const botoes = document.querySelectorAll('#menu button');
+  botoes.forEach(b => b.addEventListener('click', () => {
+    botoes.forEach(x => x.classList.remove('ativo'));
+    b.classList.add('ativo');
+    mv.src = b.dataset.src;
+    mv.cameraOrbit = 'auto auto auto';
+    mv.fieldOfView = 'auto';
+  }));
+</script>
+</body>
+</html>
