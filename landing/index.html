@@ -1,0 +1,499 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Field Copilot</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+<style>
+  :root {
+    --bg: #0b0b0d; --bg2: #101114; --fg: #f2f2f4; --dim: #9a9aa2;
+    --accent: #d9622b;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html { scroll-behavior: auto; }
+  body {
+    background: var(--bg); color: var(--fg);
+    font-family: -apple-system, "SF Pro Display", "Segoe UI", system-ui, sans-serif;
+    overflow-x: hidden;
+  }
+  section { position: relative; }
+  .pin-stage { height: 100vh; width: 100%; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+  canvas.seq { width: 100%; height: 100%; object-fit: cover; display: block; }
+  h1, h2 { font-weight: 700; letter-spacing: -0.02em; }
+  h2 { font-size: clamp(28px, 5vw, 56px); }
+  .kicker { color: var(--accent); font-size: 13px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 14px; }
+  .copy { color: var(--dim); font-size: clamp(16px, 2vw, 21px); line-height: 1.5; max-width: 560px; }
+  .copy strong { color: var(--fg); font-weight: 600; }
+
+  /* HERO */
+  #hero .titulo {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-start; padding-top: 9vh; text-align: center; pointer-events: none;
+  }
+  #hero h1 { font-size: clamp(40px, 7vw, 88px); }
+  #hero .tag { color: var(--dim); font-size: clamp(15px, 2vw, 22px); margin-top: 10px; }
+  #hero .dica { position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%); color: var(--dim); font-size: 13px; animation: pulsar 2.2s infinite; }
+  @keyframes pulsar { 50% { opacity: .3; } }
+
+  /* blocos de texto sobre midia */
+  .overtexto {
+    position: absolute; left: 8vw; bottom: 12vh; max-width: 480px;
+    background: rgba(11,11,13,.55); backdrop-filter: blur(8px);
+    padding: 22px 26px; border-radius: 14px; border: 1px solid rgba(255,255,255,.07);
+  }
+
+  /* callouts S2 */
+  .callout {
+    position: absolute; color: var(--fg); font-size: 15px; opacity: 0;
+    padding: 8px 14px; border: 1px solid rgba(255,255,255,.25); border-radius: 999px;
+    background: rgba(11,11,13,.5); backdrop-filter: blur(6px); white-space: nowrap;
+  }
+
+  .chips { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+  .chip {
+    border: 1px solid rgba(255,255,255,.18); border-radius: 999px; padding: 8px 16px;
+    font-size: 14px; color: var(--fg); opacity: 0; transform: translateY(12px);
+    background: rgba(255,255,255,.04);
+  }
+
+  .painel-texto { position: absolute; top: 10vh; left: 8vw; max-width: 460px; }
+
+  /* secao 3D interativo */
+  .mv-wrap { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; background: var(--bg2); }
+  model-viewer { width: min(90vw, 1000px); height: 70vh; --poster-color: transparent; }
+  .mv-hint { color: var(--dim); font-size: 14px; }
+
+  /* lanterna */
+  #lanterna-stage img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  #glow {
+    position: absolute; width: 34vw; height: 34vw; border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,250,220,.55) 0%, rgba(255,250,220,.12) 40%, transparent 70%);
+    left: 57%; top: 50%; transform: translate(-50%,-50%); opacity: 0; pointer-events: none;
+    filter: blur(6px);
+  }
+
+  /* split S6 */
+  .split { display: grid; grid-template-columns: 1fr 1fr; min-height: 100vh; }
+  .split > div { position: relative; }
+  .ph {
+    position: absolute; inset: 24px; border: 2px dashed rgba(255,255,255,.2); border-radius: 16px;
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    color: var(--dim); font-size: 14px; padding: 24px; background: rgba(255,255,255,.02);
+  }
+  .ph b { color: var(--fg); display: block; margin-bottom: 6px; }
+
+  /* relogio UI overlay */
+  #relogio-ui {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
+    width: min(46vw, 560px); aspect-ratio: 4/3; border-radius: 18px;
+    background: #f4f2ee; color: #23211f; padding: 4% 5%; opacity: 0;
+    box-shadow: 0 40px 120px rgba(0,0,0,.6);
+    font-size: clamp(10px, 1.4vw, 18px);
+  }
+  #relogio-ui .saud { font-weight: 700; font-size: 1.9em; color: #6d6a66; }
+  #relogio-ui .play { position: absolute; right: 6%; top: 8%; width: 3em; height: 3em; border-radius: 50%; background: #b9b6b1; }
+  #relogio-ui .card { margin-top: 7%; border-left: .35em solid var(--accent); background: #fff; border-radius: .5em; padding: 4% 5%; box-shadow: 0 2px 10px rgba(0,0,0,.06); }
+  #relogio-ui .card b { font-size: 1.1em; color: #454341; }
+  #relogio-ui .linha { height: .45em; width: 55%; background: #e4e1dc; border-radius: 99px; margin-top: 5%; }
+  #relogio-ui .fila { display: flex; gap: 4%; margin-top: 7%; }
+  #relogio-ui .bchip { flex: 1; text-align: center; padding: 4% 0; border-radius: .6em; background: #eceae6; color: #7a7772; font-weight: 600; }
+  #relogio-ui .bchip.escuro { background: #3a3835; color: #f4f2ee; }
+
+  /* cena real S8 */
+  #cena .legenda {
+    position: absolute; bottom: 10vh; left: 50%; transform: translateX(-50%);
+    font-size: clamp(18px, 2.6vw, 30px); font-weight: 600; text-align: center;
+    text-shadow: 0 2px 20px rgba(0,0,0,.8); opacity: 0;
+  }
+
+  /* specs */
+  #specs { padding: 14vh 8vw; background: var(--bg2); }
+  #specs .grade { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 40px; margin-top: 50px; max-width: 1100px; }
+  .spec-col h3 { font-size: 15px; color: var(--accent); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 18px; }
+  .spec-item { display: flex; justify-content: space-between; gap: 20px; padding: 13px 0; border-bottom: 1px solid rgba(255,255,255,.08); font-size: 15px; }
+  .spec-item span:first-child { color: var(--dim); }
+  .fade-up { opacity: 0; transform: translateY(30px); }
+
+  /* final */
+  #final { height: 100vh; }
+  #final img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  #final .cta {
+    position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
+    background: linear-gradient(transparent 30%, rgba(11,11,13,.85));
+  }
+  .botao {
+    display: inline-block; padding: 14px 34px; border-radius: 999px; font-size: 17px; font-weight: 600;
+    background: var(--fg); color: #111; text-decoration: none;
+  }
+  .botao.vazado { background: transparent; color: var(--fg); border: 1px solid rgba(255,255,255,.35); }
+  footer { padding: 26px; text-align: center; color: var(--dim); font-size: 13px; }
+
+  @media (max-width: 760px) {
+    .split { grid-template-columns: 1fr; }
+    .overtexto { left: 6vw; right: 6vw; max-width: none; }
+    .painel-texto { left: 6vw; right: 6vw; }
+  }
+</style>
+</head>
+<body>
+
+<!-- S0 HERO -->
+<section id="hero">
+  <div class="pin-stage"><canvas class="seq" id="cv-hero"></canvas></div>
+  <div class="titulo">
+    <h1>Field Copilot</h1>
+    <p class="tag">VÃª o que o tÃ©cnico vÃª. Responde no ouvido.<br>Sem tirar as mÃ£os do trabalho.</p>
+  </div>
+  <div class="dica">role para explorar</div>
+</section>
+
+<!-- S1 PROBLEMA (video Krea) -->
+<section id="problema">
+  <div class="pin-stage" style="background:var(--bg2)">
+    <div class="ph" style="position:absolute;inset:0;border:none;border-radius:0">
+      <div><b>mÃ­dia Krea pendente</b> vid_tecnico_painel â€” tÃ©cnico com as duas mÃ£os num painel elÃ©trico, 8s loop</div>
+    </div>
+    <div class="overtexto">
+      <div class="kicker">Trabalho de campo</div>
+      <h2 id="prob-frase">As duas mÃ£os<br>no trabalho.</h2>
+    </div>
+  </div>
+</section>
+
+<!-- S2 CONJUNTO 360 + callouts -->
+<section id="conjunto">
+  <div class="pin-stage">
+    <canvas class="seq" id="cv-conjunto"></canvas>
+    <div class="callout" id="co-camera" style="left:16%;top:34%">MÃ³dulo cÃ¢mera Â· 5 MP</div>
+    <div class="callout" id="co-fita" style="left:58%;top:20%">Fita elÃ¡stica de 3 pontos</div>
+    <div class="callout" id="co-bateria" style="left:64%;top:56%">MÃ³dulo bateria Â· 21700</div>
+    <div class="callout" id="co-fone" style="left:22%;top:66%">Fone + microfone Â· plug Ãºnico</div>
+  </div>
+</section>
+
+<!-- S3 CAMERA zoom -->
+<section id="camera">
+  <div class="pin-stage">
+    <canvas class="seq" id="cv-camera"></canvas>
+    <div class="painel-texto">
+      <div class="kicker">O olho</div>
+      <h2>Aponta para onde<br>o tÃ©cnico olha.</h2>
+      <div class="chips">
+        <span class="chip">5 MP Â· OV5640</span>
+        <span class="chip">Autofoco</span>
+        <span class="chip">~75Â° de campo</span>
+        <span class="chip">BotÃ£o de gravar</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S3b 3D interativo -->
+<section class="mv-wrap">
+  <div class="kicker">Explore em 3D</div>
+  <model-viewer src="../models/novo_modulo_camera_v3.glb" camera-controls auto-rotate shadow-intensity="0.8" exposure="1" environment-image="neutral" interaction-prompt="none"></model-viewer>
+  <div class="mv-hint">arraste para girar Â· scroll fora do modelo continua a pÃ¡gina</div>
+</section>
+
+<!-- S4 BATERIA -->
+<section id="bateria">
+  <div class="pin-stage" id="lanterna-stage">
+    <canvas class="seq" id="cv-bateria"></canvas>
+    <img id="lant-off" src="assets/stills/img_lanterna_off.webp" alt="" style="opacity:0">
+    <img id="lant-on" src="assets/stills/img_lanterna_on.webp" alt="" style="opacity:0">
+    <div id="glow"></div>
+    <div class="painel-texto">
+      <div class="kicker">Um turno inteiro</div>
+      <h2>Energia de um lado.<br>Luz fora do eixo.</h2>
+      <div class="chips">
+        <span class="chip">CÃ©lula 21700 Â· 5000 mAh</span>
+        <span class="chip">~9 h de trabalho</span>
+        <span class="chip">Troca sem ferramenta</span>
+        <span class="chip">LED a 15 cm da lente</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S5 FONE encaixe -->
+<section id="fone">
+  <div class="pin-stage">
+    <canvas class="seq" id="cv-fone"></canvas>
+    <div class="painel-texto">
+      <div class="kicker">Uma peÃ§a sÃ³</div>
+      <h2>Gancho, fone e microfone.<br>Um Ãºnico plug.</h2>
+      <p class="copy" style="margin-top:14px">O conjunto de Ã¡udio encaixa no jack <strong>P3</strong> sob o mÃ³dulo da cÃ¢mera â€” sem cabo pendurado no caminho.</p>
+    </div>
+  </div>
+</section>
+
+<!-- S6 ERGONOMIA split -->
+<section id="ergonomia" class="split">
+  <div>
+    <div class="ph"><div><b>mÃ­dia Krea pendente</b> img_capacete â€” trabalhador de capacete branco com o headset sob a aba</div></div>
+  </div>
+  <div>
+    <div class="pin-stage" style="height:100%"><canvas class="seq" id="cv-montagem"></canvas></div>
+    <div class="overtexto" style="left:6%;bottom:8%">
+      <div class="kicker">Veste com EPI</div>
+      <h2 style="font-size:clamp(22px,3vw,36px)">Fita de trÃªs pontos.<br>Cabe sob o capacete.</h2>
+    </div>
+  </div>
+</section>
+
+<!-- S7 RELOGIO -->
+<section id="relogio">
+  <div class="pin-stage">
+    <canvas class="seq" id="cv-relogio"></canvas>
+    <div id="relogio-ui">
+      <div class="saud">Bom dia, Carlos</div>
+      <div class="play"></div>
+      <div class="card"><b>OS 3798 Â· Substituir compressor</b><div class="linha"></div></div>
+      <div class="fila">
+        <div class="bchip escuro">Copiloto</div>
+        <div class="bchip">Nova tarefa</div>
+        <div class="bchip">Chamado</div>
+      </div>
+    </div>
+    <div class="painel-texto">
+      <div class="kicker">A interface</div>
+      <h2>Android no pulso.<br>LegÃ­vel de relance.</h2>
+    </div>
+  </div>
+</section>
+
+<!-- S8 CENA REAL (video Krea) -->
+<section id="cena">
+  <div class="pin-stage" style="background:var(--bg2)">
+    <div class="ph" style="position:absolute;inset:0;border:none;border-radius:0">
+      <div><b>mÃ­dia Krea pendente</b> vid_cena_completa â€” tÃ©cnico consulta o relÃ³gio em casa de mÃ¡quinas, 10s loop</div>
+    </div>
+    <div class="legenda" id="leg1">â€” Copiloto, registra a leitura.</div>
+    <div class="legenda" id="leg2" style="color:#8fe08f">âœ“ Leitura registrada Â· OS 3798</div>
+  </div>
+</section>
+
+<!-- S9 SPECS -->
+<section id="specs">
+  <div class="kicker fade-up">Ficha tÃ©cnica</div>
+  <h2 class="fade-up">Medido, nÃ£o estimado.</h2>
+  <div class="grade">
+    <div class="spec-col fade-up">
+      <h3>CabeÃ§a</h3>
+      <div class="spec-item"><span>MÃ³dulos (cada)</span><span>121 Ã— 38,7 Ã— 44,4 mm</span></div>
+      <div class="spec-item"><span>CÃ¢mera</span><span>OV5640 Â· 5 MP Â· AF</span></div>
+      <div class="spec-item"><span>CÃ©lula</span><span>21700 Â· 5000 mAh</span></div>
+      <div class="spec-item"><span>Autonomia</span><span>~9 h por turno</span></div>
+      <div class="spec-item"><span>Ãudio</span><span>fone + mic Â· jack P3 Ãºnico</span></div>
+      <div class="spec-item"><span>Carga</span><span>USB-C Â· 5 V 2 A</span></div>
+    </div>
+    <div class="spec-col fade-up">
+      <h3>Pulso</h3>
+      <div class="spec-item"><span>Tela</span><span>2,8" Â· 480Ã—640 Â· deitada</span></div>
+      <div class="spec-item"><span>Sistema</span><span>Android 11 Â· 4+64 GB</span></div>
+      <div class="spec-item"><span>RÃ¡dio</span><span>4G Â· WiFi 5 GHz Â· BT Â· GPS</span></div>
+      <div class="spec-item"><span>VedaÃ§Ã£o</span><span>IP67 Â· 132 g</span></div>
+      <div class="spec-item"><span>Corpo</span><span>66 Ã— 53 Ã— 13 mm</span></div>
+      <div class="spec-item"><span>Processamento</span><span>na nuvem, sempre</span></div>
+    </div>
+  </div>
+  <p style="margin-top:44px" class="fade-up"><a class="botao vazado" href="https://clovismarkan-loja.github.io/fieldcopilot-3d/" target="_blank">Ver todas as peÃ§as em 3D â†’</a></p>
+</section>
+
+<!-- S10 FINAL -->
+<section id="final">
+  <img src="assets/stills/img_final_perfil.webp" alt="Field Copilot">
+  <div class="cta">
+    <h2>Field Copilot</h2>
+    <p class="copy" style="text-align:center">BravoLabs Â· Loja Interativa</p>
+    <div style="display:flex;gap:14px">
+      <a class="botao" href="mailto:contato.rio@lojainterativa.com">Falar com a gente</a>
+      <a class="botao vazado" href="https://clovismarkan-loja.github.io/fieldcopilot-3d/" target="_blank">Modelo 3D</a>
+    </div>
+  </div>
+</section>
+<footer>Loja Interativa ComputaÃ§Ã£o GrÃ¡fica Â· conceito visual â€” imagens geradas do modelo 3D em escala real</footer>
+
+<script>
+gsap.registerPlugin(ScrollTrigger);
+
+/* ---------- motor de sequencias em canvas ---------- */
+class Seq {
+  constructor(canvasId, pasta, total) {
+    this.cv = document.getElementById(canvasId);
+    this.ctx = this.cv.getContext('2d');
+    this.pasta = pasta; this.total = total;
+    this.imgs = new Array(total); this.alvo = 0; this.ultimo = -1;
+    this.carregar();
+    window.addEventListener('resize', () => { this.ultimo = -1; this._tenta(); });
+  }
+  carregar() {
+    for (let i = 0; i < this.total; i++) {
+      const im = new Image();
+      im.src = `${this.pasta}/f${String(i).padStart(3,'0')}.webp`;
+      im.onload = () => this._tenta();   // redesenha assim que o frame pendente chega
+      this.imgs[i] = im;
+    }
+  }
+  desenha(frac) { this.alvo = frac; this._tenta(); }
+  _tenta() {
+    const i = Math.max(0, Math.min(this.total - 1, Math.round(this.alvo * (this.total - 1))));
+    let im = this.imgs[i];
+    if (!im || !im.complete || !im.naturalWidth) {
+      // fallback: frame carregado mais proximo, sem travar a tela em preto
+      let melhor = -1;
+      for (let d = 1; d < this.total; d++) {
+        const a = i - d, b = i + d;
+        if (a >= 0 && this.imgs[a].complete && this.imgs[a].naturalWidth) { melhor = a; break; }
+        if (b < this.total && this.imgs[b].complete && this.imgs[b].naturalWidth) { melhor = b; break; }
+      }
+      if (melhor < 0) return;
+      im = this.imgs[melhor];
+      if (melhor === this.ultimo) return;
+      this.ultimo = melhor;
+    } else {
+      if (i === this.ultimo) return;
+      this.ultimo = i;
+    }
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const W = Math.max(2, Math.round(this.cv.clientWidth * dpr));
+    const H = Math.max(2, Math.round(this.cv.clientHeight * dpr));
+    if (this.cv.width !== W || this.cv.height !== H) { this.cv.width = W; this.cv.height = H; }
+    const s = Math.max(W / im.width, H / im.height);
+    const w = im.width * s, h = im.height * s;
+    this.ctx.drawImage(im, (W - w) / 2, (H - h) / 2, w, h);
+  }
+}
+
+const seqHero     = new Seq('cv-hero', 'assets/seq_hero_360', 120);
+const seqConjunto = new Seq('cv-conjunto', 'assets/seq_conjunto_360', 120);
+const seqCamera   = new Seq('cv-camera', 'assets/seq_camera_zoom', 90);
+const seqBateria  = new Seq('cv-bateria', 'assets/seq_bateria_giro', 90);
+const seqFone     = new Seq('cv-fone', 'assets/seq_fone_encaixe', 90);
+const seqMont     = new Seq('cv-montagem', 'assets/seq_montagem', 60);
+const seqRelogio  = new Seq('cv-relogio', 'assets/seq_relogio_giro', 90);
+
+/* ---------- HERO: gira sozinho ate o primeiro scroll assumir ---------- */
+let heroAuto = 0, heroScrub = null;
+(function girar() {
+  if (heroScrub === null || heroScrub < 0.01) { heroAuto = (heroAuto + 0.0012) % 1; seqHero.desenha(heroAuto); }
+  requestAnimationFrame(girar);
+})();
+ScrollTrigger.create({
+  trigger: '#hero', start: 'top top', end: '+=220%', pin: true, scrub: 0.4,
+  onUpdate: st => { heroScrub = st.progress; if (st.progress > 0.01) seqHero.desenha(st.progress); }
+});
+gsap.to('#hero .titulo', { opacity: 0, y: -60, scrollTrigger: { trigger: '#hero', start: 'top top', end: '+=60%', scrub: true } });
+gsap.to('#hero .dica', { opacity: 0, scrollTrigger: { trigger: '#hero', start: 'top top', end: '+=20%', scrub: true } });
+
+/* ---------- S1: frases trocando ---------- */
+const frases = ['As duas mÃ£os<br>no trabalho.', 'A informaÃ§Ã£o<br>no ouvido.', 'O registro<br>acontece sozinho.'];
+ScrollTrigger.create({
+  trigger: '#problema', start: 'top top', end: '+=200%', pin: true, scrub: 0.4,
+  onUpdate: st => {
+    const i = Math.min(2, Math.floor(st.progress * 3));
+    const el = document.getElementById('prob-frase');
+    if (el.dataset.i != i) { el.dataset.i = i; el.innerHTML = frases[i]; gsap.fromTo(el, {opacity:0, y:18}, {opacity:1, y:0, duration:.45}); }
+  }
+});
+
+/* ---------- S2: giro com callouts ---------- */
+const callouts = [
+  { el: '#co-camera', ini: 0.02, fim: 0.24 },
+  { el: '#co-fita',   ini: 0.27, fim: 0.49 },
+  { el: '#co-bateria',ini: 0.52, fim: 0.74 },
+  { el: '#co-fone',   ini: 0.77, fim: 0.99 },
+];
+ScrollTrigger.create({
+  trigger: '#conjunto', start: 'top top', end: '+=320%', pin: true, scrub: 0.4,
+  onUpdate: st => {
+    seqConjunto.desenha(st.progress);
+    callouts.forEach(c => {
+      const dentro = st.progress >= c.ini && st.progress <= c.fim;
+      gsap.to(c.el, { opacity: dentro ? 1 : 0, y: dentro ? 0 : 10, duration: .3, overwrite: 'auto' });
+    });
+  }
+});
+
+/* ---------- S3: zoom da camera + chips ---------- */
+ScrollTrigger.create({
+  trigger: '#camera', start: 'top top', end: '+=260%', pin: true, scrub: 0.4,
+  onUpdate: st => {
+    seqCamera.desenha(Math.min(1, st.progress * 1.15));
+    document.querySelectorAll('#camera .chip').forEach((ch, i) => {
+      const alvo = 0.45 + i * 0.12;
+      gsap.to(ch, { opacity: st.progress > alvo ? 1 : 0, y: st.progress > alvo ? 0 : 12, duration: .3, overwrite: 'auto' });
+    });
+  }
+});
+
+/* ---------- S4: bateria gira, depois lanterna acende ---------- */
+ScrollTrigger.create({
+  trigger: '#bateria', start: 'top top', end: '+=300%', pin: true, scrub: 0.4,
+  onUpdate: st => {
+    const p = st.progress;
+    if (p < 0.55) {
+      seqBateria.desenha(p / 0.55);
+      gsap.set('#lant-off', { opacity: 0 }); gsap.set('#lant-on', { opacity: 0 }); gsap.set('#glow', { opacity: 0 });
+    } else {
+      const q = (p - 0.55) / 0.45;
+      gsap.set('#lant-off', { opacity: Math.min(1, q * 3) });
+      gsap.set('#lant-on', { opacity: Math.max(0, (q - 0.35) * 2.2) });
+      gsap.set('#glow', { opacity: Math.max(0, (q - 0.4) * 1.6) });
+    }
+    document.querySelectorAll('#bateria .chip').forEach((ch, i) => {
+      const alvo = 0.12 + i * 0.11;
+      gsap.to(ch, { opacity: p > alvo ? 1 : 0, y: p > alvo ? 0 : 12, duration: .3, overwrite: 'auto' });
+    });
+  }
+});
+
+/* ---------- S5: encaixe do plug ---------- */
+ScrollTrigger.create({
+  trigger: '#fone', start: 'top top', end: '+=220%', pin: true, scrub: 0.4,
+  onUpdate: st => seqFone.desenha(st.progress)
+});
+
+/* ---------- S6: montagem explodida ---------- */
+ScrollTrigger.create({
+  trigger: '#ergonomia', start: 'top top', end: '+=200%', pin: true, scrub: 0.4,
+  onUpdate: st => seqMont.desenha(st.progress)
+});
+
+/* ---------- S7: relogio gira, UI liga ---------- */
+ScrollTrigger.create({
+  trigger: '#relogio', start: 'top top', end: '+=300%', pin: true, scrub: 0.4,
+  onUpdate: st => {
+    const p = st.progress;
+    seqRelogio.desenha(Math.min(1, p / 0.6));
+    const q = Math.max(0, (p - 0.62) / 0.3);
+    gsap.set('#relogio-ui', { opacity: Math.min(1, q * 2), scale: 0.92 + 0.08 * Math.min(1, q * 1.4) });
+  }
+});
+
+/* ---------- S8: legendas por tempo de pin ---------- */
+ScrollTrigger.create({
+  trigger: '#cena', start: 'top top', end: '+=180%', pin: true, scrub: 0.4,
+  onUpdate: st => {
+    gsap.set('#leg1', { opacity: st.progress > 0.15 && st.progress < 0.5 ? 1 : 0 });
+    gsap.set('#leg2', { opacity: st.progress > 0.55 && st.progress < 0.95 ? 1 : 0 });
+  }
+});
+
+/* ---------- teste: ?go=NNN pula para um scroll ---------- */
+const goParam = new URLSearchParams(location.search).get('go');
+if (goParam) setTimeout(() => scrollTo(0, parseInt(goParam, 10)), 1200);
+
+/* ---------- S9: fades ---------- */
+document.querySelectorAll('.fade-up').forEach(el => {
+  gsap.to(el, { opacity: 1, y: 0, duration: .8, ease: 'power2.out',
+    scrollTrigger: { trigger: el, start: 'top 85%' } });
+});
+</script>
+</body>
+</html>
+
