@@ -39,6 +39,21 @@
   #hero .dica { position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%); color: var(--dim); font-size: 13px; animation: pulsar 2.2s infinite; }
   #hero-preto { position: absolute; inset: 0; background: #000; opacity: 0; pointer-events: none; }
 
+  /* S1: tres videos empilhados com crossfade guiado pelo scroll */
+  .vid-s1 { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+  /* S1: bullets verticais indicando a frase atual (pilula escura) */
+  #prob-bullets {
+    position: absolute; right: 4.5%; top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 14px;
+    padding: 16px 10px; border-radius: 999px; background: rgba(10,10,14,.72);
+  }
+  #prob-bullets span {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: rgba(255,255,255,.28); transition: background .3s, transform .3s;
+  }
+  #prob-bullets span.ativo { background: #fff; transform: scale(1.45); }
+
   /* topo fixo: logo + contato (difference inverte sozinho sobre a secao branca) */
   #topo {
     position: fixed; top: 0; left: 0; right: 0; z-index: 999;
@@ -147,16 +162,27 @@
   }
 
   /* specs */
-  #specs { padding: 14vh 8vw; background: var(--bg2); }
-  #specs .grade { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 40px; margin-top: 50px; max-width: 1100px; }
+  #specs { padding: 14vh 8vw 10vh; background: var(--bg2); }
+  #specs .specs-linha { display: grid; grid-template-columns: minmax(300px, 44%) 1fr; gap: 4vw; align-items: stretch; }
+  #specs .grade { display: grid; grid-template-columns: 1fr; gap: 34px; margin-top: 50px; }
+  /* conjunto girando: mesma cena/fundo do visualizador, sem interacao */
+  #mv-specs {
+    width: 100%; height: 100%; min-height: 74vh; pointer-events: none;
+    border-radius: 24px; --poster-color: transparent;
+    background: radial-gradient(ellipse at 50% 40%, #2e2f34 0%, #1c1d20 70%);
+  }
   .spec-col h3 { font-size: 15px; color: var(--accent); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 18px; }
   .spec-item { display: flex; justify-content: space-between; gap: 20px; padding: 13px 0; border-bottom: 1px solid rgba(255,255,255,.08); font-size: 15px; }
   .spec-item span:first-child { color: var(--dim); }
   .fade-up { opacity: 0; transform: translateY(30px); }
 
-  /* final */
-  #final { height: 100vh; }
-  #final img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  /* final: surge continuo, no mesmo fundo da ficha tecnica (sem quebra de secao) */
+  #final { height: 100vh; background: var(--bg2); }
+  #final img {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 30%);
+    mask-image: linear-gradient(to bottom, transparent 0, #000 30%);
+  }
   #final .cta {
     position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
     background: linear-gradient(transparent 30%, rgba(11,11,13,.85));
@@ -196,12 +222,16 @@
 <!-- S1 PROBLEMA (video Krea) -->
 <section id="problema">
   <div class="pin-stage" style="background:var(--bg2)">
-    <video src="assets/vid_tecnico_painel.mp4" poster="assets/img_tecnico_still.webp" autoplay muted loop playsinline
-           style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></video>
+    <video class="vid-s1" src="assets/vid_tecnico_painel.mp4" poster="assets/img_tecnico_still.webp" autoplay muted loop playsinline style="opacity:1"></video>
+    <video class="vid-s1" src="assets/vid_ouvido.mp4" autoplay muted loop playsinline style="opacity:0"></video>
+    <video class="vid-s1" src="assets/vid_registro.mp4" autoplay muted loop playsinline style="opacity:0"></video>
     <div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(0,0,0,.55), rgba(0,0,0,.15) 45%, rgba(0,0,0,.25))"></div>
     <div class="overtexto">
       <div class="kicker">Trabalho de campo</div>
       <h2 id="prob-frase">As duas mãos<br>no trabalho.</h2>
+    </div>
+    <div id="prob-bullets" aria-hidden="true">
+      <span class="ativo"></span><span></span><span></span>
     </div>
   </div>
 </section>
@@ -340,29 +370,36 @@
 
 <!-- S9 SPECS -->
 <section id="specs">
-  <div class="kicker fade-up">Ficha técnica</div>
-  <h2 class="fade-up">Medido, não estimado.</h2>
-  <div class="grade">
-    <div class="spec-col fade-up">
-      <h3>Cabeça</h3>
-      <div class="spec-item"><span>Módulos (cada)</span><span>121 × 38,7 × 44,4 mm</span></div>
-      <div class="spec-item"><span>Câmera</span><span>OV5640 · 5 MP · AF</span></div>
-      <div class="spec-item"><span>Célula</span><span>21700 · 5000 mAh</span></div>
-      <div class="spec-item"><span>Autonomia</span><span>~9 h por turno</span></div>
-      <div class="spec-item"><span>Áudio</span><span>fone + mic · jack P3 único</span></div>
-      <div class="spec-item"><span>Carga</span><span>USB-C · 5 V 2 A</span></div>
+  <div class="specs-linha">
+    <div>
+      <div class="kicker fade-up">Ficha técnica</div>
+      <h2 class="fade-up">Medido, não estimado.</h2>
+      <div class="grade">
+        <div class="spec-col fade-up">
+          <h3>Cabeça</h3>
+          <div class="spec-item"><span>Módulos (cada)</span><span>121 × 38,7 × 44,4 mm</span></div>
+          <div class="spec-item"><span>Câmera</span><span>OV5640 · 5 MP · AF</span></div>
+          <div class="spec-item"><span>Célula</span><span>21700 · 5000 mAh</span></div>
+          <div class="spec-item"><span>Autonomia</span><span>~9 h por turno</span></div>
+          <div class="spec-item"><span>Áudio</span><span>fone + mic · jack P3 único</span></div>
+          <div class="spec-item"><span>Carga</span><span>USB-C · 5 V 2 A</span></div>
+        </div>
+        <div class="spec-col fade-up">
+          <h3>Pulso</h3>
+          <div class="spec-item"><span>Tela</span><span>2,8" · 480×640 · deitada</span></div>
+          <div class="spec-item"><span>Sistema</span><span>Android 11 · 4+64 GB</span></div>
+          <div class="spec-item"><span>Rádio</span><span>4G · WiFi 5 GHz · BT · GPS</span></div>
+          <div class="spec-item"><span>Vedação</span><span>IP67 · 132 g</span></div>
+          <div class="spec-item"><span>Corpo</span><span>66 × 53 × 13 mm</span></div>
+          <div class="spec-item"><span>Processamento</span><span>na nuvem, sempre</span></div>
+        </div>
+      </div>
     </div>
-    <div class="spec-col fade-up">
-      <h3>Pulso</h3>
-      <div class="spec-item"><span>Tela</span><span>2,8" · 480×640 · deitada</span></div>
-      <div class="spec-item"><span>Sistema</span><span>Android 11 · 4+64 GB</span></div>
-      <div class="spec-item"><span>Rádio</span><span>4G · WiFi 5 GHz · BT · GPS</span></div>
-      <div class="spec-item"><span>Vedação</span><span>IP67 · 132 g</span></div>
-      <div class="spec-item"><span>Corpo</span><span>66 × 53 × 13 mm</span></div>
-      <div class="spec-item"><span>Processamento</span><span>na nuvem, sempre</span></div>
-    </div>
+    <model-viewer id="mv-specs" class="fade-up" src="../models/headset_montado_v3.glb" loading="eager" reveal="auto"
+      auto-rotate auto-rotate-delay="0" rotation-per-second="18deg"
+      shadow-intensity="0.9" shadow-softness="0.8" exposure="1.05"
+      environment-image="neutral" interaction-prompt="none" disable-zoom disable-pan disable-tap></model-viewer>
   </div>
-  <p style="margin-top:44px" class="fade-up"><a class="botao vazado" href="https://clovismarkan-loja.github.io/fieldcopilot-3d/" target="_blank">Ver todas as peças em 3D →</a></p>
 </section>
 
 <!-- S10 FINAL -->
@@ -487,9 +524,29 @@ const frases = ['As duas mãos<br>no trabalho.', 'A informação<br>no ouvido.',
 ScrollTrigger.create({
   trigger: '#problema', start: 'top top', end: '+=200%', pin: true, scrub: 0.4,
   onUpdate: st => {
-    const i = Math.min(2, Math.floor(st.progress * 3));
+    const p = st.progress;
+    const i = Math.min(2, Math.floor(p * 3));
     const el = document.getElementById('prob-frase');
-    if (el.dataset.i != i) { el.dataset.i = i; el.innerHTML = frases[i]; gsap.fromTo(el, {opacity:0, y:18}, {opacity:1, y:0, duration:.45}); }
+    if (el.dataset.i != i) {
+      el.dataset.i = i; el.innerHTML = frases[i];
+      gsap.fromTo(el, {opacity:0, y:18}, {opacity:1, y:0, duration:.45});
+      document.querySelectorAll('#prob-bullets span').forEach((b, k) => b.classList.toggle('ativo', k === i));
+    }
+    // crossfade dos 3 videos nas fronteiras 1/3 e 2/3 (janela de +-6% do pin);
+    // se algum video nao carregou (404/erro), mantem o primeiro visivel o tempo todo
+    const vids = document.querySelectorAll('#problema .vid-s1');
+    const prontos = [...vids].every(v => v.readyState >= 2 && !v.error);
+    if (vids.length === 3 && prontos) {
+      const W = 0.06, sm = t => { t = Math.max(0, Math.min(1, t)); return t * t * (3 - 2 * t); };
+      const f1 = sm((p - (1/3 - W)) / (2 * W));   // 0->1 cruzando 1/3
+      const f2 = sm((p - (2/3 - W)) / (2 * W));   // 0->1 cruzando 2/3
+      vids[0].style.opacity = (1 - f1).toFixed(3);
+      vids[1].style.opacity = (f1 * (1 - f2)).toFixed(3);
+      vids[2].style.opacity = f2.toFixed(3);
+    } else if (vids.length) {
+      vids[0].style.opacity = 1;
+      for (let k = 1; k < vids.length; k++) vids[k].style.opacity = 0;
+    }
   }
 });
 
@@ -522,6 +579,21 @@ ScrollTrigger.create({
     });
   }
 });
+
+/* ---------- S4: glow nasce exatamente no LED (compensa o corte do object-fit:cover) ---------- */
+function posicionaGlow() {
+  const stage = document.getElementById('lanterna-stage');
+  const g = document.getElementById('glow');
+  if (!stage || !g) return;
+  const W = stage.clientWidth, H = stage.clientHeight;
+  const s = Math.max(W / 1600, H / 900);          // still 1600x900 em cover
+  const x = (W - 1600 * s) / 2 + 0.6044 * 1600 * s; // centro do LED medido na imagem
+  const y = (H - 900 * s) / 2 + 0.5497 * 900 * s;
+  g.style.left = Math.round(x) + 'px';
+  g.style.top = Math.round(y) + 'px';
+}
+posicionaGlow();
+addEventListener('resize', posicionaGlow, { passive: true });
 
 /* ---------- S4: bateria gira, depois lanterna acende ---------- */
 ScrollTrigger.create({
