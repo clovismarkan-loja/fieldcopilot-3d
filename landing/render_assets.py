@@ -343,7 +343,8 @@ elif ASSET == "celular_giro":
     luz_estudio(0.6)
     setup_render()
     # uma volta so, comecando/terminando na pose "legivel" (tela bem visivel de cima)
-    orbita_seq("seq_celular_giro", (0.0, 0.0, -0.025), 0.44, 0.38, math.radians(52), math.radians(46), 90, lens=70, ang0=270.0, giro=360)
+    # raios 2x => celular ~50% menor no quadro
+    orbita_seq("seq_celular_giro", (0.0, 0.0, -0.025), 0.88, 0.76, math.radians(52), math.radians(46), 90, lens=70, ang0=270.0, giro=360)
 
 elif ASSET == "final_perfil":
     importa("headset_montado_v4.glb")
