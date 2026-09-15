@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Field Copilot</title>
-<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <link rel="apple-touch-icon" href="assets/favicon.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
@@ -269,7 +269,7 @@
 <!-- S3b 3D interativo -->
 <section class="mv-wrap">
   <div class="kicker">Explore em 3D</div>
-  <model-viewer src="../models/novo_modulo_camera_v3.glb" loading="eager" reveal="auto" camera-controls auto-rotate shadow-intensity="0.8" exposure="1" environment-image="neutral" interaction-prompt="none"></model-viewer>
+  <model-viewer src="../models/novo_modulo_camera_v4.glb?v=7" loading="eager" reveal="auto" camera-controls auto-rotate shadow-intensity="0.8" exposure="1" environment-image="neutral" interaction-prompt="none"></model-viewer>
   <div class="mv-hint">arraste para girar · scroll fora do modelo continua a página</div>
 </section>
 
@@ -344,7 +344,7 @@
     </div>
     <div class="painel-texto">
       <div class="kicker">A interface</div>
-      <h2>Android no pulso.<br>Legível de relance.</h2>
+      <h2>Android no braço.<br>Legível de relance.</h2>
     </div>
   </div>
 </section>
@@ -355,7 +355,7 @@
   <div class="veu"></div>
   <div class="overtexto" style="left:6%;bottom:8%">
     <div class="kicker">Sempre à mão</div>
-    <h2 style="font-size:clamp(22px,3vw,36px)">A ordem de serviço<br>no seu pulso.</h2>
+    <h2 style="font-size:clamp(22px,3vw,36px)">A ordem de serviço<br>no seu braço.</h2>
   </div>
 </section>
 
@@ -397,7 +397,7 @@
         </div>
       </div>
     </div>
-    <model-viewer id="mv-specs" class="fade-up" src="../models/headset_montado_v3.glb" loading="eager" reveal="auto"
+    <model-viewer id="mv-specs" class="fade-up" src="../models/headset_montado_v4.glb?v=2" loading="eager" reveal="auto"
       auto-rotate auto-rotate-delay="0" rotation-per-second="18deg"
       shadow-intensity="0.9" shadow-softness="0.8" exposure="1.05"
       environment-image="neutral" interaction-prompt="none" disable-zoom disable-pan disable-tap></model-viewer>
@@ -476,7 +476,7 @@ const seqCamera   = new Seq('cv-camera', 'assets/seq_camera_zoom', 90);
 const seqBateria  = new Seq('cv-bateria', 'assets/seq_bateria_giro', 90);
 const seqFone     = new Seq('cv-fone', 'assets/seq_fone_encaixe', 90);
 const seqMont     = new Seq('cv-montagem', 'assets/seq_montagem', 60);
-const seqRelogio  = new Seq('cv-relogio', 'assets/seq_relogio_giro', 90);
+const seqRelogio  = new Seq('cv-relogio', 'assets/seq_celular_giro', 90);
 
 /* ---------- HERO: frontal estatico; scroll = zoom ate a lente -> preto ---------- */
 let heroScrub = null;
@@ -589,8 +589,8 @@ function posicionaGlow() {
   if (!stage || !g) return;
   const W = stage.clientWidth, H = stage.clientHeight;
   const s = Math.max(W / 1600, H / 900);          // still 1600x900 em cover
-  const x = (W - 1600 * s) / 2 + 0.6044 * 1600 * s; // centro do LED medido na imagem
-  const y = (H - 900 * s) / 2 + 0.5497 * 900 * s;
+  const x = (W - 1600 * s) / 2 + 0.7721 * 1600 * s; // centro do LED medido na imagem (v4)
+  const y = (H - 900 * s) / 2 + 0.6076 * 900 * s;
   g.style.left = Math.round(x) + 'px';
   g.style.top = Math.round(y) + 'px';
 }
