@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Field Copilot · Galeria</title>
+<link rel="icon" type="image/png" href="../favicon.png">
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    background: #131417; color: #e8e8ea; padding: 28px 4vw 60px;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  header { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+  h1 { font-size: 18px; font-weight: 650; }
+  header span { font-size: 12.5px; color: #9a9aa2; }
+  h2 { font-size: 14px; font-weight: 600; color: #9a9aa2; letter-spacing: .08em;
+       text-transform: uppercase; margin: 34px 0 14px; }
+  .grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+  .grid a { display: block; border-radius: 10px; overflow: hidden; background: #1c1d20;
+            border: 1px solid #2a2b30; }
+  .grid img { width: 100%; height: 100%; object-fit: cover; display: block;
+              aspect-ratio: 16/9; transition: transform .25s; }
+  .grid a:hover img { transform: scale(1.03); }
+  .vids { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); }
+  .vids figure { background: #1c1d20; border: 1px solid #2a2b30; border-radius: 10px;
+                 overflow: hidden; }
+  .vids video { width: 100%; display: block; aspect-ratio: 16/9; background: #000; }
+  .vids figcaption { padding: 8px 12px; font-size: 12.5px; color: #9a9aa2; }
+  footer { margin-top: 44px; font-size: 11.5px; color: #7a7a82; }
+  a.volta { color: #9a9aa2; font-size: 13px; text-decoration: none; margin-left: auto; }
+  a.volta:hover { color: #e8e8ea; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Field Copilot &mdash; Galeria de conceito</h1>
+  <span>material de trabalho &middot; s&oacute; para visualiza&ccedil;&atilde;o</span>
+  <a class="volta" href="../">&larr; visualizador 3D</a>
+</header>
+
+<h2>Imagens aprovadas</h2>
+<div class="grid">
+  <a href="img/falando.webp" target="_blank"><img src="img/falando.webp" alt="falando"></a>
+  <a href="img/falando2.webp" target="_blank"><img src="img/falando2.webp" alt="falando2"></a>
+  <a href="img/falando3.webp" target="_blank"><img src="img/falando3.webp" alt="falando3"></a>
+  <a href="img/falando4.webp" target="_blank"><img src="img/falando4.webp" alt="falando4"></a>
+  <a href="img/falando5.webp" target="_blank"><img src="img/falando5.webp" alt="falando5"></a>
+</div>
+
+<h2>V&iacute;deos &mdash; cena completa</h2>
+<div class="vids">
+  <figure>
+    <video src="vid/vid_cena_completa_v2.mp4" controls muted loop playsinline preload="metadata"></video>
+    <figcaption>v2 &middot; primeiro com m&oacute;dulos v4 + celular</figcaption>
+  </figure>
+  <figure>
+    <video src="vid/vid_cena_completa_v3.mp4" controls muted loop playsinline preload="metadata"></video>
+    <figcaption>v3 &middot; oper&aacute;rio brasileiro (dispositivo saiu errado)</figcaption>
+  </figure>
+  <figure>
+    <video src="vid/vid_cena_completa_v4.mp4" controls muted loop playsinline preload="metadata"></video>
+    <figcaption>v4 &middot; brasileiro, dispositivo correto, lente apagada</figcaption>
+  </figure>
+  <figure>
+    <video src="vid/vid_cena_completa_v5.mp4" controls muted loop playsinline preload="metadata"></video>
+    <figcaption>v5 &middot; sem sorriso, olhar est&aacute;vel</figcaption>
+  </figure>
+</div>
+
+<footer>Loja Interativa &middot; galeria interna de refer&ecirc;ncia do Field Copilot</footer>
+</body>
+</html>
